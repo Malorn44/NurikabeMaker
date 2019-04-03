@@ -26,10 +26,12 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    tinyxml2.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    tinyxml2.h
 
 FORMS += \
         mainwindow.ui
@@ -38,3 +40,7 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    assets.qrc
+
