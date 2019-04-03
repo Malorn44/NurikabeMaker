@@ -19,13 +19,6 @@
      <widget class="QTableWidget" name="Board"/>
     </item>
     <item>
-     <widget class="QSlider" name="verticalSlider">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-     </widget>
-    </item>
-    <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <widget class="QPushButton" name="pushButton">

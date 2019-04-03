@@ -3,9 +3,9 @@
 string format_time(const steady_clock::time_point start, const steady_clock::time_point finish) {
     ostringstream oss;
 
-    if (finish - start < 1ms) {
+    if (finish - start < std::chrono::microseconds(1)) {
         oss << duration_cast<duration<double, micro>>(finish - start).count() << " microseconds";
-    } else if (finish - start < 1s) {
+    } else if (finish - start < std::chrono::seconds(1)) {
         oss << duration_cast<duration<double, milli>>(finish - start).count() << " milliseconds";
     } else {
         oss << duration_cast<duration<double>>(finish - start).count() << " seconds";
