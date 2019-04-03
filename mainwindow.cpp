@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     row = 10;
     col = 10;
-    uint cellSize = 30;
+    cellSize = 30;
 
     // initialize grid
     for (uint i = 0; i < row; i++) {
@@ -28,10 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
             grid[i].push_back(0);
         }
     }
-
-    // set table row and col count
-    ui->Board->setRowCount(row);
-    ui->Board->setColumnCount(col);
 
     // remove table headers
     ui->Board->horizontalHeader()->setVisible(false);
@@ -43,6 +39,21 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->Board->horizontalHeader()->setMinimumSectionSize(10);
     ui->Board->verticalHeader()->setMinimumSectionSize(10);
+    ui->Board->setFont(QFont("Times",12));
+
+    refreshTable();
+
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::refreshTable() {
+    // set table row and col count
+    ui->Board->setRowCount(row);
+    ui->Board->setColumnCount(col);
 
     // set fixed column and row width
     for (uint i = 0; i < row; i++)
@@ -54,15 +65,17 @@ MainWindow::MainWindow(QWidget *parent) :
     for (uint i = 0; i < row; i++) {
         for (uint j = 0; j < col; j++) {
             ui->Board->setItem(i, j, new QTableWidgetItem);
-            ui->Board->item(i, j)->setBackground(Qt::lightGray);
+            QTableWidgetItem* selectedItem = ui->Board->item(i, j);
+            if (grid[i][j] == 0) {
+                selectedItem->setBackground(Qt::lightGray);
+            } else if (grid[i][j] > 0) {
+                selectedItem->setBackground(Qt::white);
+                selectedItem->setText(QString::number(grid[i][j]));
+                selectedItem->setTextAlignment(Qt::AlignCenter);
+            }
         }
     }
 
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }
 
 std::vector<Cell> MainWindow::ParseXML(std::string &file) {
@@ -116,13 +129,24 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     return cellVec;
 }
 
+void MainWindow::createGrid(std::vector<Cell> cellVec) {
+    grid.clear();
+    for (uint i = 0; i < row; i++) {
+        grid.push_back(std::vector<int>());
+        for (uint j = 0; j < col; j++) {
+            grid[i].push_back(0);
+        }
+    }
+    for (Cell c : cellVec) {
+        grid[c.y][c.x] = c.value;
+    }
+}
+
 void MainWindow::loadFile() {
     std::string file = loaded_file.toStdString();
     std::vector<Cell> cellVec = ParseXML(file);
-    for (const Cell& c : cellVec) {
-        printCell(c);
-    }
-
+    createGrid(cellVec);
+    refreshTable();
 }
 
 void MainWindow::on_actionLoad_triggered()

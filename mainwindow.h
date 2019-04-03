@@ -33,10 +33,13 @@ private:
     Ui::MainWindow *ui;
     void loadFile();
     std::vector<Cell> ParseXML(std::string &file);
+    void createGrid(std::vector<Cell> cellVec);
+    void refreshTable();
 
     QString loaded_file;
     uint row;
     uint col;
+    uint cellSize;
     std::vector<std::vector<int> > grid;
 };
 

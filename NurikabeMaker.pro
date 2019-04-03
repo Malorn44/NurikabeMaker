@@ -27,11 +27,13 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    tinyxml2.cpp
+    tinyxml2.cpp \
+    nurikabe.cpp
 
 HEADERS += \
         mainwindow.h \
-    tinyxml2.h
+    tinyxml2.h \
+    nurikabe.h
 
 FORMS += \
         mainwindow.ui
