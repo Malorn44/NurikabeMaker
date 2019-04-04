@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->console->setText("No file loaded...");
 
     loaded_file = "";
 
@@ -123,14 +124,11 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
         cell = cell->NextSiblingElement("cell");
     }
 
-//    std::cout << "Puzzle read!" << std::endl;
-//    std::cout << "Puzzle name: " << puzzleName << std::endl;
-//    std::cout << "Board height: " << height << " width: " << width << std::endl;
-//    std::cout << "Cells: " << std::endl;
-//    for (const Cell& c : cellVec) {
-//        printCell(c);
-//    }
+    size_t last = file.find_last_of("/");
+    if (last != std::string::npos) file = file.substr(last+1);
 
+    ui->console->setText(QString::fromStdString("Puzzle name: " + file + "\tHeight: " +
+                                                to_string(row) + "\tWidth: " + to_string(col)));
     return cellVec;
 }
 
@@ -182,7 +180,6 @@ void MainWindow::on_actionLoad_triggered()
 
 void MainWindow::on_solvePuzzle_clicked()
 {
-    std::cout << "solvePuzzle" << std::endl;
     struct Puzzle {
         const char * name;
         int w;
@@ -226,8 +223,9 @@ void MainWindow::on_solvePuzzle_clicked()
 
         const int k = g.known();
         const int cells = puzzle.w * puzzle.h;
-
-        std::cout << k << "/" << cells << " (" << k * 100.0 / cells << "%) solved" << std::endl;
+        string status = (k-cells == 0) ? " solved.\t" : " not solved.\t";
+        ui->console->setText(QString::fromStdString(string(puzzle.name) + status + to_string(k) + "/" +
+                                                    to_string(cells) + " (" + to_string(k * 100.0 / cells) + "%)"));
     } catch (const exception& e) {
         cerr << "EXCEPTION CAUGHT! \"" << e.what() << "\"" << std::endl;
         // TODO: Handle this exception
