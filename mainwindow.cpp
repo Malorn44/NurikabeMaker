@@ -187,6 +187,7 @@ void MainWindow::on_solvePuzzle_clicked()
         const char * s;
     };
 
+    ui->console->setText("Solving... this may take a moment.");
 
     Puzzle puzzle;
     puzzle.h = row;
@@ -219,13 +220,12 @@ void MainWindow::on_solvePuzzle_clicked()
         grid = g.getFinal();
         refreshTable();
 
-        std::cout << puzzle.name << ": " << format_time(start, finish) << ", ";
-
         const int k = g.known();
         const int cells = puzzle.w * puzzle.h;
         string status = (k-cells == 0) ? " solved.\t" : " not solved.\t";
         ui->console->setText(QString::fromStdString(string(puzzle.name) + status + to_string(k) + "/" +
-                                                    to_string(cells) + " (" + to_string(k * 100.0 / cells) + "%)"));
+                                                    to_string(cells) + " (" + to_string(k * 100.0 / cells) + "%)\t" +
+                                                    format_time(start, finish)));
     } catch (const exception& e) {
         cerr << "EXCEPTION CAUGHT! \"" << e.what() << "\"" << std::endl;
         // TODO: Handle this exception
