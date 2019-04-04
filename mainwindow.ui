@@ -68,6 +68,7 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionNew"/>
     <addaction name="actionLoad"/>
     <addaction name="actionExit"/>
    </widget>
@@ -98,6 +99,15 @@
    </property>
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/new_file.svg</normaloff>:/icon/assets/new_file.svg</iconset>
+   </property>
+   <property name="text">
+    <string>New</string>
    </property>
   </action>
  </widget>

@@ -38,11 +38,14 @@ private slots:
 
     void onNumEntered(QTableWidgetItem *item);
 
+    void on_actionNew_triggered();
+
 private:
     Ui::MainWindow *ui;
     void loadFile();
     std::vector<Cell> ParseXML(std::string &file);
     void createGrid(std::vector<Cell> cellVec);
+    void createDefaultGrid();
     void refreshTable();
     std::string gridToString();
 

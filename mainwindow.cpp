@@ -23,21 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->console->setText("No file loaded...");
-    state = 0;
-    loaded_file = "";
 
-    row = 10;
-    col = 10;
-    cellSize = 30;
-
-    // initialize grid
-    for (uint i = 0; i < row; i++) {
-        grid.push_back(std::vector<int>());
-        for (uint j = 0; j < col; j++) {
-            grid[i].push_back(0);
-        }
-    }
+    createDefaultGrid();
 
     // remove table headers
     ui->Board->horizontalHeader()->setVisible(false);
@@ -75,13 +62,16 @@ void MainWindow::onItemClicked(QTableWidgetItem *item) {
 void MainWindow::onNumEntered(QTableWidgetItem *item) {
     if (state != 0) return;
     if (isNumber(item->text().toStdString())) {
-        item->setBackground(Qt::white);
-        grid[item->row()][item->column()] = stoul(item->text().toStdString());
-    } else {
-        item->setBackground(Qt::lightGray);
-        item->setText("");
-        grid[item->row()][item->column()] = 0;
+        uint textAsNum = stoul(item->text().toStdString());
+        if (textAsNum != 0) {
+            item->setBackground(Qt::white);
+            grid[item->row()][item->column()] = stoul(item->text().toStdString());
+            return;
+        }
     }
+    item->setBackground(Qt::lightGray);
+    item->setText("");
+    grid[item->row()][item->column()] = 0;
 }
 
 void MainWindow::refreshTable() {
@@ -164,6 +154,24 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     return cellVec;
 }
 
+void MainWindow::createDefaultGrid() {
+    ui->console->setText("No file loaded...");
+    state = 0;
+    loaded_file = "";
+
+    row = 10;
+    col = 10;
+    cellSize = 30;
+
+    // initialize grid
+    for (uint i = 0; i < row; i++) {
+        grid.push_back(std::vector<int>());
+        for (uint j = 0; j < col; j++) {
+            grid[i].push_back(0);
+        }
+    }
+}
+
 void MainWindow::createGrid(std::vector<Cell> cellVec) {
     grid.clear();
     for (uint i = 0; i < row; i++) {
@@ -202,7 +210,7 @@ std::string MainWindow::gridToString() {
 
 void MainWindow::on_actionLoad_triggered()
 {
-    state = 2;
+    state = 1;
     ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     loaded_file = QFileDialog::getOpenFileName(
@@ -275,4 +283,10 @@ void MainWindow::on_solvePuzzle_clicked()
 void MainWindow::on_actionExit_triggered()
 {
     QApplication::quit();
+}
+
+void MainWindow::on_actionNew_triggered()
+{
+    createDefaultGrid();
+    refreshTable();
 }
