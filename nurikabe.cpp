@@ -500,6 +500,23 @@ int Grid::known() const {
     return ret;
 }
 
+vector<vector<int> > Grid::getFinal() const {
+    const auto& [s,v,updated,ctr,failed_guesses,failed_coords] = m_output[m_output.size()-1];
+    vector<vector<int> > out;
+    for (int y = 0; y < m_height; ++y) {
+        out.push_back(vector<int>());
+        for (int x = 0; x < m_width; ++x) {
+            switch (v[x][y]) {
+                case UNKNOWN: out[y].push_back(-3); break;
+                case WHITE:   out[y].push_back(-2); break;
+                case BLACK:   out[y].push_back(-1); break;
+                default:      out[y].push_back(v[x][y]); break;
+            }
+        }
+    }
+    return out;
+}
+
 void Grid::write(ostream& os, const steady_clock::time_point start, const steady_clock::time_point finish) const {
     os <<
 R"(<!DOCTYPE html>
@@ -892,7 +909,7 @@ bool Grid::unreachable(const int x_root, const int y_root, set<pair<int, int>> d
             }
         }
 
-        for_valid_neighbors(x_curr, y_curr, [&](const int x, const int y) {
+        for_valid_neighbors(x_curr, y_curr, [&, n_curr = n_curr](const int x, const int y) {
             if (cell(x, y) == UNKNOWN && discovered.insert(make_pair(x, y)).second) {
                 q.push(make_tuple(x, y, n_curr + 1));
             }

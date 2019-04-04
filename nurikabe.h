@@ -52,6 +52,8 @@ public:
 
     void write(ostream& os, steady_clock::time_point start, steady_clock::time_point finish) const;
 
+    vector<vector<int> > getFinal() const;
+
 private:
     // The states that a cell can be in. Numbered cells are positive,
     // which is why this has an explicitly specified underlying type.

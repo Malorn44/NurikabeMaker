@@ -4,6 +4,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "nurikabe.h"
 
 void printCell (const Cell& cell) {
     std::cout << "cell {value: " << cell.value << " x: " << cell.x << " y: " << cell.y << " }" << std::endl;
@@ -72,6 +73,10 @@ void MainWindow::refreshTable() {
                 selectedItem->setBackground(Qt::white);
                 selectedItem->setText(QString::number(grid[i][j]));
                 selectedItem->setTextAlignment(Qt::AlignCenter);
+            } else if (grid[i][j] == -1) {
+                selectedItem->setBackground(Qt::black);
+            } else if (grid[i][j] == -2) {
+                selectedItem->setBackground(Qt::white);
             }
         }
     }
@@ -143,10 +148,26 @@ void MainWindow::createGrid(std::vector<Cell> cellVec) {
 }
 
 void MainWindow::loadFile() {
+    // TODO: add exception for if cellVec is empty
     std::string file = loaded_file.toStdString();
     std::vector<Cell> cellVec = ParseXML(file);
     createGrid(cellVec);
     refreshTable();
+}
+
+std::string MainWindow::gridToString() {
+    std::string output = "";
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            if (grid[i][j] == 0) {
+                output += " ";
+            } else if (grid[i][j] > 0) {
+                output += std::to_string(grid[i][j]);
+            }
+        }
+        output += "\n";
+    }
+    return output;
 }
 
 void MainWindow::on_actionLoad_triggered()
@@ -156,4 +177,67 @@ void MainWindow::on_actionLoad_triggered()
                 "C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles",
                 "All files (*.*);;XML File (*.xml)");
     loadFile();
+}
+
+
+void MainWindow::on_solvePuzzle_clicked()
+{
+    std::cout << "solvePuzzle" << std::endl;
+    struct Puzzle {
+        const char * name;
+        int w;
+        int h;
+        const char * s;
+    };
+
+
+    Puzzle puzzle;
+    puzzle.h = row;
+    puzzle.w = col;
+
+    std::string file = loaded_file.toStdString();
+    size_t last = file.find_last_of("/");
+    if (last != std::string::npos) file = file.substr(last+1);
+    puzzle.name = file.c_str();
+
+    std::string out = gridToString();
+    std::cout << out << std::endl;
+    puzzle.s = out.c_str();
+
+    // converting to Puzzle object readable by the solver
+
+    try {
+        const auto start = steady_clock::now();
+
+        Grid g(puzzle.w, puzzle.h, puzzle.s);
+
+        while (g.solve() == Grid::KEEP_GOING) { }
+
+        const auto finish = steady_clock::now();
+
+
+        ofstream f(string("") + puzzle.name + string(".html"));
+
+//        g.write(f, start, finish);
+        grid = g.getFinal();
+        refreshTable();
+
+        std::cout << puzzle.name << ": " << format_time(start, finish) << ", ";
+
+        const int k = g.known();
+        const int cells = puzzle.w * puzzle.h;
+
+        std::cout << k << "/" << cells << " (" << k * 100.0 / cells << "%) solved" << std::endl;
+    } catch (const exception& e) {
+        cerr << "EXCEPTION CAUGHT! \"" << e.what() << "\"" << std::endl;
+        // TODO: Handle this exception
+    } catch (...) {
+        cerr << "UNKNOWN EXCEPTION CAUGHT!" << std::endl;
+        // TODO: Handle this exception
+    }
+}
+
+void MainWindow::on_actionExit_triggered()
+{
+    QApplication::quit();
 }

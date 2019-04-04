@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/icon">
         <file>assets/load_file.svg</file>
+        <file>assets/exit_app.svg</file>
     </qresource>
 </RCC>

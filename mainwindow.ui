@@ -21,7 +21,7 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="solvePuzzle">
         <property name="text">
          <string>Solve</string>
         </property>
@@ -58,6 +58,7 @@
      <string>File</string>
     </property>
     <addaction name="actionLoad"/>
+    <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -77,6 +78,15 @@
    </property>
    <property name="text">
     <string>Load</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/exit_app.svg</normaloff>:/icon/assets/exit_app.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>
