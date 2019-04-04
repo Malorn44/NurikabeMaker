@@ -10,13 +10,21 @@ void printCell (const Cell& cell) {
     std::cout << "cell {value: " << cell.value << " x: " << cell.x << " y: " << cell.y << " }" << std::endl;
 }
 
+bool isNumber(string s) {
+    if (s.size() == 0) return false;
+    for (uint i = 0; i < s.length(); i++)
+        if (isdigit(s[i]) == false)
+            return false;
+    return true;
+}
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     ui->console->setText("No file loaded...");
-
+    state = 0;
     loaded_file = "";
 
     row = 10;
@@ -38,18 +46,42 @@ MainWindow::MainWindow(QWidget *parent) :
     // table styling
     ui->Board->setFocusPolicy(Qt::NoFocus);
     ui->Board->setSelectionMode(QAbstractItemView::NoSelection);
-    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+//    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->Board->horizontalHeader()->setMinimumSectionSize(10);
     ui->Board->verticalHeader()->setMinimumSectionSize(10);
     ui->Board->setFont(QFont("Times",12));
 
     refreshTable();
 
+//    connect( ui->board, &QTableWidget::itemEntered, this, &MainWindow::onItemClicked );
+    connect( ui->Board, &QTableWidget::itemPressed, this, &MainWindow::onItemClicked );
+    connect( ui->Board, &QTableWidget::itemChanged, this, &MainWindow::onNumEntered );
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::onItemClicked(QTableWidgetItem *item) {
+    if (state == 0) {
+//        ui->Board->setEditTriggers(QAbstractItemView::EditTriggers);
+//        item->setBackground(Qt::white);
+    } else if (state == 1) {
+
+    }
+}
+
+void MainWindow::onNumEntered(QTableWidgetItem *item) {
+    if (state != 0) return;
+    if (isNumber(item->text().toStdString())) {
+        item->setBackground(Qt::white);
+        grid[item->row()][item->column()] = stoul(item->text().toStdString());
+    } else {
+        item->setBackground(Qt::lightGray);
+        item->setText("");
+        grid[item->row()][item->column()] = 0;
+    }
 }
 
 void MainWindow::refreshTable() {
@@ -68,12 +100,12 @@ void MainWindow::refreshTable() {
         for (uint j = 0; j < col; j++) {
             ui->Board->setItem(i, j, new QTableWidgetItem);
             QTableWidgetItem* selectedItem = ui->Board->item(i, j);
+            selectedItem->setTextAlignment(Qt::AlignCenter);
             if (grid[i][j] == 0) {
                 selectedItem->setBackground(Qt::lightGray);
             } else if (grid[i][j] > 0) {
                 selectedItem->setBackground(Qt::white);
                 selectedItem->setText(QString::number(grid[i][j]));
-                selectedItem->setTextAlignment(Qt::AlignCenter);
             } else if (grid[i][j] == -1) {
                 selectedItem->setBackground(Qt::black);
             } else if (grid[i][j] == -2) {
@@ -170,6 +202,9 @@ std::string MainWindow::gridToString() {
 
 void MainWindow::on_actionLoad_triggered()
 {
+    state = 2;
+    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
     loaded_file = QFileDialog::getOpenFileName(
                 this, tr("Open File"),
                 "C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles",
@@ -186,6 +221,8 @@ void MainWindow::on_solvePuzzle_clicked()
         int h;
         const char * s;
     };
+
+    state = 2;
 
     ui->console->setText("Solving... this may take a moment.");
 

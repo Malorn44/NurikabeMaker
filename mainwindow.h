@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <vector>
+#include <QTableWidgetItem>
 #include <QMainWindow>
 
 #include "tinyxml2.h"
@@ -33,6 +34,10 @@ private slots:
 
     void on_actionExit_triggered();
 
+    void onItemClicked(QTableWidgetItem *item);
+
+    void onNumEntered(QTableWidgetItem *item);
+
 private:
     Ui::MainWindow *ui;
     void loadFile();
@@ -46,6 +51,11 @@ private:
     uint col;
     uint cellSize;
     std::vector<std::vector<int> > grid;
+
+    // 0 is create
+    // 1 is solve
+    // 2 is view
+    uint state;
 };
 
 #endif // MAINWINDOW_H

@@ -592,21 +592,6 @@ R"(<!DOCTYPE html>
 
         os << "</table><br/>\n";
     }
-
-    // TODO: Code for getting last input and printing to console.
-    // const auto& [s,v,updated,ctr,failed_guesses,failed_coords] = m_output[m_output.size()-1];
-    // for (int y = 0; y < m_height; ++y) {
-    //     for (int x = 0; x < m_width; ++x) {
-    //         switch (v[x][y]) {
-    //             case UNKNOWN: std::cout << "? "; break;
-    //             case WHITE:   std::cout << ". "; break;
-    //             case BLACK:   std::cout << "# "; break;
-    //             default:      std::cout << v[x][y] << " "; break;
-    //         }
-    //     }
-    //     std::cout << std::endl;
-    // }
-
     os << "Total: " << format_time(start, finish) << "\n";
 
     os <<
