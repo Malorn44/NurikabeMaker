@@ -32,15 +32,18 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     tinyxml2.cpp \
-    nurikabe.cpp
+    nurikabe.cpp \
+    newfile.cpp
 
 HEADERS += \
         mainwindow.h \
     tinyxml2.h \
-    nurikabe.h
+    nurikabe.h \
+    newfile.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    newfile.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

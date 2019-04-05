@@ -5,6 +5,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "nurikabe.h"
+#include "newfile.h"
 
 void printCell (const Cell& cell) {
     std::cout << "cell {value: " << cell.value << " x: " << cell.x << " y: " << cell.y << " }" << std::endl;
@@ -23,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
     createDefaultGrid();
 
     // remove table headers
@@ -149,18 +150,20 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     size_t last = file.find_last_of("/");
     if (last != std::string::npos) file = file.substr(last+1);
 
-    ui->console->setText(QString::fromStdString("Puzzle name: " + file + "\tHeight: " +
-                                                to_string(row) + "\tWidth: " + to_string(col)));
+    ui->console->setText(QString::fromStdString("Puzzle name: " + file + "\t Height: " +
+                                                to_string(row) + "\t Width: " + to_string(col)));
     return cellVec;
 }
 
 void MainWindow::createDefaultGrid() {
     ui->console->setText("No file loaded...");
+    ui->statusView->setText("CREATE");
+    ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
     state = 0;
     loaded_file = "";
 
-    row = 10;
-    col = 10;
+    row = 15;
+    col = 15;
     cellSize = 30;
 
     // initialize grid
@@ -186,18 +189,26 @@ void MainWindow::createGrid(std::vector<Cell> cellVec) {
 }
 
 void MainWindow::loadFile() {
-    // TODO: add exception for if cellVec is empty
+    uint old_state = state;
+    state = 1;
     std::string file = loaded_file.toStdString();
     std::vector<Cell> cellVec = ParseXML(file);
+    if (cellVec.empty()) { // handles the case of no file found
+        state = old_state;
+        return;
+    }
     createGrid(cellVec);
     refreshTable();
+    ui->statusView->setText("SOLVE");
+    ui->statusView->setStyleSheet("QLabel { background-color : blue; color : white }");
+    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
 std::string MainWindow::gridToString() {
     std::string output = "";
     for (int i = 0; i < row; i++) {
         for (int j = 0; j < col; j++) {
-            if (grid[i][j] == 0) {
+            if (grid[i][j] <= 0) {
                 output += " ";
             } else if (grid[i][j] > 0) {
                 output += std::to_string(grid[i][j]);
@@ -210,9 +221,6 @@ std::string MainWindow::gridToString() {
 
 void MainWindow::on_actionLoad_triggered()
 {
-    state = 1;
-    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     loaded_file = QFileDialog::getOpenFileName(
                 this, tr("Open File"),
                 "C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles",
@@ -231,7 +239,9 @@ void MainWindow::on_solvePuzzle_clicked()
     };
 
     state = 2;
-
+    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->statusView->setText("VIEW");
+    ui->statusView->setStyleSheet("QLabel { background-color : red; color : white }");
     ui->console->setText("Solving... this may take a moment.");
 
     Puzzle puzzle;
@@ -287,6 +297,71 @@ void MainWindow::on_actionExit_triggered()
 
 void MainWindow::on_actionNew_triggered()
 {
+    NewFile newfile;
+    newfile.setModal(true);
+    newfile.exec();
+
     createDefaultGrid();
     refreshTable();
+
+    ui->Board->setEditTriggers(QAbstractItemView::DoubleClicked);
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+    using namespace tinyxml2;
+
+//    XMLDeclaration* declaration = new XMLDeclaration("1.0");//Create DTD
+//    TiXmlDocument* doc = new TiXmlDocument;
+//    doc->LinkEndChild(declaration);
+
+//    TiXmlElement* week = new TiXmlElement("week");
+//    TiXmlElement* day = new TiXmlElement("day");
+//    TiXmlElement* name = new TiXmlElement("name");
+//    TiXmlElement* note = new TiXmlElement("note");
+//    TiXmlElement* tl = new TiXmlElement("tl");
+//    TiXmlElement* ti = new TiXmlElement("ti");
+//    TiXmlText* dayName = new TiXmlText("");
+//    TiXmlText* dayNote = new TiXmlText("");
+
+    XMLDocument doc;
+
+    XMLElement* legup = doc.NewElement("Legup");
+    legup->SetAttribute("version","2.0.0");
+    XMLElement* puzzle = doc.NewElement("puzzle");
+    puzzle->SetAttribute("name","Nurikabe");
+    XMLElement* board = doc.NewElement("board");
+    board->SetAttribute("height",to_string(row).c_str());
+    board->SetAttribute("width",to_string(col).c_str());
+    XMLElement* cells = doc.NewElement("cells");
+    vector<XMLElement*> all_cells;
+    for (int i = row-1; i >= 0; i--) {
+        for (int j = col-1; j >= 0; j--) {
+            if (grid[i][j] > 0) {
+                XMLElement* cell = doc.NewElement("cell");
+                cell->SetAttribute("value",to_string(grid[i][j]).c_str());
+                cell->SetAttribute("x",to_string(j).c_str());
+                cell->SetAttribute("y",to_string(i).c_str());
+                cells->InsertFirstChild(cell);
+            }
+        }
+    }
+    board->InsertFirstChild(cells);
+    puzzle->InsertFirstChild(board);
+    legup->InsertFirstChild(puzzle);
+    doc.InsertFirstChild(legup);
+
+    // creating the declaration header
+    XMLDeclaration* declaration = doc.NewDeclaration("xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"");
+    doc.InsertFirstChild(declaration);
+
+    doc.SaveFile("C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles/new");
+//    doc.FirstChildElement(XMLElement("Legup"));
+
+//    const XMLElement* puzzle = doc.FirstChildElement("Legup")->FirstChildElement("puzzle");
+//    const std::string puzzleName(puzzle->Attribute("name"));
+//    const XMLElement* board = puzzle->FirstChildElement("board");
+//    const std::string h(board->Attribute("height"));
+//    const std::string w(board->Attribute("width"));
+//    const XMLElement* cell = board->FirstChildElement("cells")->FirstChildElement("cell");
 }

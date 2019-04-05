@@ -32,6 +32,27 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
+       <widget class="QLabel" name="statusView">
+        <property name="font">
+         <font>
+          <family>Trebuchet MS</family>
+          <weight>75</weight>
+          <bold>true</bold>
+          <kerning>true</kerning>
+         </font>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>CREATE</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="solvePuzzle">
         <property name="text">
          <string>Solve</string>
@@ -70,6 +91,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionLoad"/>
+    <addaction name="actionSave"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -108,6 +130,15 @@
    </property>
    <property name="text">
     <string>New</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/save_file.svg</normaloff>:/icon/assets/save_file.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
    </property>
   </action>
  </widget>

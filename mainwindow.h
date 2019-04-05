@@ -40,6 +40,8 @@ private slots:
 
     void on_actionNew_triggered();
 
+    void on_actionSave_triggered();
+
 private:
     Ui::MainWindow *ui;
     void loadFile();
