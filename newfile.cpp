@@ -1,6 +1,7 @@
 #include "newfile.h"
 #include "ui_newfile.h"
-#include "mainwindow.h"
+
+#include <iostream>
 
 #include <QRegExpValidator>
 #include <QRegExp>
@@ -18,4 +19,12 @@ NewFile::NewFile(QWidget *parent) :
 NewFile::~NewFile()
 {
     delete ui;
+}
+
+uint NewFile::getRow() {
+    return stoul(ui->lineEdit->text().toStdString());
+}
+
+uint NewFile::getCol() {
+    return stoul(ui->lineEdit_2->text().toStdString());
 }

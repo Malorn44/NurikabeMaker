@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
-    createDefaultGrid();
+    createGrid(10, 10);
 
     // remove table headers
     ui->Board->horizontalHeader()->setVisible(false);
@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // table styling
     ui->Board->setFocusPolicy(Qt::NoFocus);
     ui->Board->setSelectionMode(QAbstractItemView::NoSelection);
-//    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->Board->setEditTriggers(QAbstractItemView::AllEditTriggers);
     ui->Board->horizontalHeader()->setMinimumSectionSize(10);
     ui->Board->verticalHeader()->setMinimumSectionSize(10);
     ui->Board->setFont(QFont("Times",12));
@@ -166,15 +166,15 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     return cellVec;
 }
 
-void MainWindow::createDefaultGrid() {
+void MainWindow::createGrid(uint newRow, uint newCol) {
     ui->console->setText("No file loaded...");
     ui->statusView->setText("CREATE");
     ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
     state = 0;
     loaded_file = "";
 
-    row = 15;
-    col = 15;
+    row = newRow;
+    col = newCol;
     cellSize = 30;
 
     // initialize grid
@@ -310,12 +310,11 @@ void MainWindow::on_actionNew_triggered()
 {
     NewFile newfile;
     newfile.setModal(true);
-    newfile.exec();
-
-    createDefaultGrid();
-    refreshTable();
-
-    ui->Board->setEditTriggers(QAbstractItemView::DoubleClicked);
+    if (newfile.exec() == QDialog::Accepted) {
+        createGrid(newfile.getRow(),newfile.getCol());
+        refreshTable();
+        ui->Board->setEditTriggers(QAbstractItemView::AllEditTriggers);
+    }
 }
 
 void MainWindow::on_actionSave_triggered()

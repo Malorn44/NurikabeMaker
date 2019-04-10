@@ -47,7 +47,7 @@ private:
     void loadFile();
     std::vector<Cell> ParseXML(std::string &file);
     void createGrid(std::vector<Cell> cellVec);
-    void createDefaultGrid();
+    void createGrid(uint row, uint col);
     void refreshTable();
     std::string gridToString();
 

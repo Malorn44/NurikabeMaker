@@ -15,6 +15,9 @@ public:
     explicit NewFile(QWidget *parent = nullptr);
     ~NewFile();
 
+    uint getRow();
+    uint getCol();
+
 private:
     Ui::NewFile *ui;
 };
