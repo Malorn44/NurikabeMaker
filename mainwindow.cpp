@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     refreshTable();
 
 //    connect( ui->board, &QTableWidget::itemEntered, this, &MainWindow::onItemClicked );
-    connect( ui->Board, &QTableWidget::itemPressed, this, &MainWindow::onItemClicked );
+    connect( ui->Board, &QTableWidget::itemClicked, this, &MainWindow::onItemClicked );
     connect( ui->Board, &QTableWidget::itemChanged, this, &MainWindow::onNumEntered );
 }
 
@@ -56,7 +56,18 @@ void MainWindow::onItemClicked(QTableWidgetItem *item) {
 //        ui->Board->setEditTriggers(QAbstractItemView::EditTriggers);
 //        item->setBackground(Qt::white);
     } else if (state == 1) {
-
+        uint iRow = item->row();
+        uint iCol = item->column();
+        if (item->backgroundColor() == Qt::lightGray) {
+            item->setBackground(Qt::black);
+            grid[iRow][iCol] = -1;
+        } else if (item->backgroundColor() == Qt::black) {
+            item->setBackground(Qt::white);
+            grid[iRow][iCol] = -2;
+        } else if (item->backgroundColor() == Qt::white) {
+            item->setBackground(Qt::lightGray);
+            grid[iRow][iCol] = 0;
+        }
     }
 }
 
