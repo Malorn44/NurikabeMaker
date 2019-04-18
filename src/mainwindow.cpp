@@ -4,7 +4,7 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "nurikabe.h"
+#include "nurikabe/nurikabe.h"
 #include "newfile.h"
 #include "generator.h"
 

@@ -29,19 +29,19 @@ QMAKE_LFLAGS_RELEASE -= -O1
 QMAKE_CXXFLAGS_RELEASE += -O3
 
 SOURCES += \
-        main.cpp \
-        mainwindow.cpp \
-    tinyxml2.cpp \
-    nurikabe.cpp \
-    newfile.cpp \
-    generator.cpp
+        src/main.cpp \
+        src/mainwindow.cpp \
+    src/tinyxml2/tinyxml2.cpp \
+    src/nurikabe/nurikabe.cpp \
+    src/newfile.cpp \
+    src/generator.cpp
 
 HEADERS += \
-        mainwindow.h \
-    tinyxml2.h \
-    nurikabe.h \
-    newfile.h \
-    generator.h
+        src/mainwindow.h \
+    src/tinyxml2/tinyxml2.h \
+    src/nurikabe/nurikabe.h \
+    src/newfile.h \
+    src/generator.h
 
 FORMS += \
         mainwindow.ui \

@@ -5,7 +5,7 @@
 #include <QTableWidgetItem>
 #include <QMainWindow>
 
-#include "tinyxml2.h"
+#include "tinyxml2/tinyxml2.h"
 
 typedef unsigned int uint;
 
