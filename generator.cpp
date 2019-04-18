@@ -46,20 +46,17 @@ void Generator::generate() {
     Point curr(rr, cc);
     m_grid[curr.r][curr.c] = -1;
 
-    cout << curr.r << " " << curr.c << endl;
-
     stack.push_back(curr);
 
     while (!stack.empty()) {
         curr = stack[stack.size()-1];
-//        draw();
+
         Point child = getRandomChild(curr.r, curr.c);
         if (child.r == -1) {
             stack.pop_back();
             continue;
         }
 
-        cout << child.r << " " << child.c << endl;
         m_grid[child.r][child.c] = -1;
         stack.push_back(child);
     }

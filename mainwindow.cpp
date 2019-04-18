@@ -81,6 +81,7 @@ void MainWindow::onItemClicked(QTableWidgetItem *item) {
     } else if (state == 1) {
         uint iRow = item->row();
         uint iCol = item->column();
+        if (grid[iRow][iCol] > 0) return;
         if (item->backgroundColor() == Qt::lightGray) {
             item->setBackground(Qt::black);
             grid[iRow][iCol] = -1;
@@ -133,7 +134,7 @@ void MainWindow::refreshTable() {
                 selectedItem->setText(QString::number(grid[i][j]));
             } else if (grid[i][j] == -1) {
                 selectedItem->setBackground(Qt::black);
-            } else if (grid[i][j] == -2) {
+            } else if (grid[i][j] <= -2) {
                 selectedItem->setBackground(Qt::white);
             }
         }
@@ -369,6 +370,15 @@ void MainWindow::on_actionSave_triggered()
     doc.SaveFile("C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles/new");
 }
 
+void MainWindow::printGrid() {
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            cout << grid[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
 void MainWindow::on_generatePuzzle_clicked()
 {
     changeState(1);
@@ -380,6 +390,9 @@ void MainWindow::on_generatePuzzle_clicked()
     g.fillInNumbers();
     g.removeValue(-1);
     grid = g.getGrid();
+
+    printGrid();
+
     refreshTable();
 }
 
@@ -396,4 +409,9 @@ void MainWindow::on_actionSolve_triggered()
 void MainWindow::on_actionView_triggered()
 {
     changeState(2);
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    printGrid();
 }

@@ -50,6 +50,8 @@ private slots:
 
     void on_actionView_triggered();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     void loadFile();
@@ -58,6 +60,7 @@ private:
     void createGrid(uint row, uint col);
     void refreshTable();
     void changeState(uint id);
+    void printGrid();
     std::string gridToString();
 
     QString loaded_file;
