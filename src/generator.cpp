@@ -38,7 +38,7 @@ void Generator::generate() {
         curr = stack[stack.size()-1];
 
         Point child = getRandomChild(curr.r, curr.c);
-        if (child.r == -1) {
+        if (child.r == -1 || ((double)rand() / RAND_MAX) < 0.05) {
             stack.pop_back();
             continue;
         }

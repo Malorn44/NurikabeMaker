@@ -367,7 +367,12 @@ void MainWindow::on_actionSave_triggered()
     XMLDeclaration* declaration = doc.NewDeclaration("xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"");
     doc.InsertFirstChild(declaration);
 
-    doc.SaveFile("C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles/new");
+    QString saveFile = QFileDialog::getSaveFileName(
+                this, tr("Open File"),
+                "C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles",
+                "All files (*.*);;XML File (*.xml)");
+    cout << saveFile.toStdString() << endl;
+    doc.SaveFile(saveFile.toStdString().c_str());
 }
 
 void MainWindow::printGrid() {
@@ -477,7 +482,7 @@ void MainWindow::on_generatePuzzle_clicked()
     Generator g(row, col);
     g.generate();
     g.fillInNumbers();
-    g.removeValue(-1);
+//    g.removeValue(-1);
     grid = g.getGrid();
 
     refreshTable();
