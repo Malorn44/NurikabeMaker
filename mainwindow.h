@@ -42,6 +42,14 @@ private slots:
 
     void on_actionSave_triggered();
 
+    void on_generatePuzzle_clicked();
+
+    void on_actionCreate_triggered();
+
+    void on_actionSolve_triggered();
+
+    void on_actionView_triggered();
+
 private:
     Ui::MainWindow *ui;
     void loadFile();
@@ -49,6 +57,7 @@ private:
     void createGrid(std::vector<Cell> cellVec);
     void createGrid(uint row, uint col);
     void refreshTable();
+    void changeState(uint id);
     std::string gridToString();
 
     QString loaded_file;

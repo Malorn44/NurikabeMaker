@@ -33,13 +33,15 @@ SOURCES += \
         mainwindow.cpp \
     tinyxml2.cpp \
     nurikabe.cpp \
-    newfile.cpp
+    newfile.cpp \
+    generator.cpp
 
 HEADERS += \
         mainwindow.h \
     tinyxml2.h \
     nurikabe.h \
-    newfile.h
+    newfile.h \
+    generator.h
 
 FORMS += \
         mainwindow.ui \

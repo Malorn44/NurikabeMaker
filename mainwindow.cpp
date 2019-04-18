@@ -6,6 +6,7 @@
 #include "ui_mainwindow.h"
 #include "nurikabe.h"
 #include "newfile.h"
+#include "generator.h"
 
 void printCell (const Cell& cell) {
     std::cout << "cell {value: " << cell.value << " x: " << cell.x << " y: " << cell.y << " }" << std::endl;
@@ -24,8 +25,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
+
+    ui->console->setText("No file loaded...");
     createGrid(10, 10);
+    changeState(0);
 
     // remove table headers
     ui->Board->horizontalHeader()->setVisible(false);
@@ -34,7 +37,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // table styling
     ui->Board->setFocusPolicy(Qt::NoFocus);
     ui->Board->setSelectionMode(QAbstractItemView::NoSelection);
-    ui->Board->setEditTriggers(QAbstractItemView::AllEditTriggers);
     ui->Board->horizontalHeader()->setMinimumSectionSize(10);
     ui->Board->verticalHeader()->setMinimumSectionSize(10);
     ui->Board->setFont(QFont("Times",12));
@@ -49,6 +51,27 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::changeState(uint id) {
+    if (id == 0) {
+        state = 0;
+        ui->Board->setEditTriggers(QAbstractItemView::AllEditTriggers);
+        ui->statusView->setText("CREATE");
+        ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
+    } else if (id == 1) {
+        state = 1;
+        ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        ui->statusView->setText("SOLVE");
+        ui->statusView->setStyleSheet("QLabel { background-color : blue; color : white }");
+    } else if (id == 2) {
+        state = 2;
+        ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        ui->statusView->setText("VIEW");
+        ui->statusView->setStyleSheet("QLabel { background-color : red; color : white }");
+    } else {
+        cerr << "ERROR: Invalid state" << endl;
+    }
 }
 
 void MainWindow::onItemClicked(QTableWidgetItem *item) {
@@ -167,10 +190,6 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
 }
 
 void MainWindow::createGrid(uint newRow, uint newCol) {
-    ui->console->setText("No file loaded...");
-    ui->statusView->setText("CREATE");
-    ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
-    state = 0;
     loaded_file = "";
 
     row = newRow;
@@ -210,9 +229,7 @@ void MainWindow::loadFile() {
     }
     createGrid(cellVec);
     refreshTable();
-    ui->statusView->setText("SOLVE");
-    ui->statusView->setStyleSheet("QLabel { background-color : blue; color : white }");
-    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    changeState(1);
 }
 
 std::string MainWindow::gridToString() {
@@ -249,10 +266,7 @@ void MainWindow::on_solvePuzzle_clicked()
         const char * s;
     };
 
-    state = 2;
-    ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    ui->statusView->setText("VIEW");
-    ui->statusView->setStyleSheet("QLabel { background-color : red; color : white }");
+    changeState(2);
     ui->console->setText("Solving... this may take a moment.");
 
     Puzzle puzzle;
@@ -280,9 +294,9 @@ void MainWindow::on_solvePuzzle_clicked()
         const auto finish = steady_clock::now();
 
 
-        ofstream f(string("") + puzzle.name + string(".html"));
+//        ofstream f(string("") + puzzle.name + string(".html"));
 
-//        g.write(f, start, finish);
+//        g.write(f, start, finish); //writes to an HTML file
         grid = g.getFinal();
         refreshTable();
 
@@ -321,19 +335,6 @@ void MainWindow::on_actionSave_triggered()
 {
     using namespace tinyxml2;
 
-//    XMLDeclaration* declaration = new XMLDeclaration("1.0");//Create DTD
-//    TiXmlDocument* doc = new TiXmlDocument;
-//    doc->LinkEndChild(declaration);
-
-//    TiXmlElement* week = new TiXmlElement("week");
-//    TiXmlElement* day = new TiXmlElement("day");
-//    TiXmlElement* name = new TiXmlElement("name");
-//    TiXmlElement* note = new TiXmlElement("note");
-//    TiXmlElement* tl = new TiXmlElement("tl");
-//    TiXmlElement* ti = new TiXmlElement("ti");
-//    TiXmlText* dayName = new TiXmlText("");
-//    TiXmlText* dayNote = new TiXmlText("");
-
     XMLDocument doc;
 
     XMLElement* legup = doc.NewElement("Legup");
@@ -366,12 +367,33 @@ void MainWindow::on_actionSave_triggered()
     doc.InsertFirstChild(declaration);
 
     doc.SaveFile("C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles/new");
-//    doc.FirstChildElement(XMLElement("Legup"));
+}
 
-//    const XMLElement* puzzle = doc.FirstChildElement("Legup")->FirstChildElement("puzzle");
-//    const std::string puzzleName(puzzle->Attribute("name"));
-//    const XMLElement* board = puzzle->FirstChildElement("board");
-//    const std::string h(board->Attribute("height"));
-//    const std::string w(board->Attribute("width"));
-//    const XMLElement* cell = board->FirstChildElement("cells")->FirstChildElement("cell");
+void MainWindow::on_generatePuzzle_clicked()
+{
+    changeState(1);
+
+    srand(time(NULL));
+
+    Generator g(row, col);
+    g.generate();
+    g.fillInNumbers();
+    g.removeValue(-1);
+    grid = g.getGrid();
+    refreshTable();
+}
+
+void MainWindow::on_actionCreate_triggered()
+{
+    changeState(0);
+}
+
+void MainWindow::on_actionSolve_triggered()
+{
+    changeState(1);
+}
+
+void MainWindow::on_actionView_triggered()
+{
+    changeState(2);
 }
