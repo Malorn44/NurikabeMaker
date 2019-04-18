@@ -26,20 +26,6 @@ Generator::Generator(int row, int col) {
     }
 }
 
-//void Generator::draw() {
-//    for (int i = 0; i < row; i++) {
-//        for (int j = 0; j < col; j++) {
-//            if (m_grid[i][j] == -1) {
-//                cout << "# ";
-//            } else {
-//                cout << ". ";
-//            }
-//        }
-//        cout << endl;
-//    }
-//    cout << endl;
-//}
-
 void Generator::generate() {
     int rr = rand() % row;
     int cc = rand() % col;
@@ -126,19 +112,7 @@ void Generator::fillInNumbers() {
         vector<Point> visited;
         visited.push_back(q.front());
 
-        while (!q.empty()) {
-            Point p = q.front();
-            q.pop();
-
-            vector<Point> children = getValidChildren(p);
-
-            for (int i = 0; i < children.size(); i++) {
-                if (std::find(visited.begin(), visited.end(), children[i]) == visited.end()) {
-                    q.push(children[i]);
-                    visited.push_back(children[i]);
-                }
-            }
-        }
+        BFS(m_grid, q, visited, 0);
 
         int randIndex = rand() % visited.size();
         m_grid[visited[randIndex].r][visited[randIndex].c] = visited.size();
@@ -153,38 +127,56 @@ void Generator::fillInNumbers() {
     }
 }
 
-vector<Point> Generator::getValidChildren(const Point &p) const {
+void Generator::removeValue(int val) {
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            if (m_grid[i][j] == val) {
+                m_grid[i][j] = 0;
+            }
+        }
+    }
+}
+
+vector<Point> getValidChildren(const vector<vector<int> > &grid, const Point &p) {
     vector<Point> children;
+    int row = grid.size();
+    int col = grid[0].size();
     int i = p.r;
     int j = p.c;
     if (i+1 < row) {
-        if (m_grid[i+1][j] >= 0) {
+        if (grid[i+1][j] == 0) {
             children.push_back(Point(i+1,j));
         }
     }
     if (i-1 >= 0) {
-        if (m_grid[i-1][j] >= 0) {
+        if (grid[i-1][j] == 0) {
             children.push_back(Point(i-1,j));
         }
     }
     if (j+1 < col) {
-        if (m_grid[i][j+1] >= 0) {
+        if (grid[i][j+1] == 0) {
             children.push_back(Point(i,j+1));
         }
     }
     if (j-1 >= 0) {
-        if (m_grid[i][j-1] >= 0) {
+        if (grid[i][j-1] == 0) {
             children.push_back(Point(i,j-1));
         }
     }
     return children;
 }
 
-void Generator::removeValue(int val) {
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            if (m_grid[i][j] == val) {
-                m_grid[i][j] = 0;
+void BFS(vector<vector<int> > &grid, queue<Point> &q, vector<Point> &visited, int val) {
+    while (!q.empty()) {
+        Point p = q.front();
+        q.pop();
+
+        vector<Point> children = getValidChildren(grid, p);
+
+        for (int i = 0; i < children.size(); i++) {
+            if (std::find(visited.begin(), visited.end(), children[i]) == visited.end()) {
+                q.push(children[i]);
+                visited.push_back(children[i]);
             }
         }
     }

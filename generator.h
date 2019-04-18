@@ -35,7 +35,11 @@ private:
 
     bool partOfSquare(int i, int j);
     Point getRandomChild(int i, int j);
-    vector<Point> getValidChildren(const Point &p) const;
+//    vector<Point> getValidChildren(const Point &p) const;
 };
+
+vector<Point> getValidChildren(const vector<vector<int> > &grid, const Point &p);
+void BFS(vector<vector<int> > &grid, queue<Point> &q, vector<Point> &visited, int val);
+
 
 #endif // GENERATOR_H

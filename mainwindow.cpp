@@ -326,9 +326,9 @@ void MainWindow::on_actionNew_triggered()
     NewFile newfile;
     newfile.setModal(true);
     if (newfile.exec() == QDialog::Accepted) {
+        changeState(0);
         createGrid(newfile.getRow(),newfile.getCol());
         refreshTable();
-        ui->Board->setEditTriggers(QAbstractItemView::AllEditTriggers);
     }
 }
 
@@ -388,7 +388,7 @@ void MainWindow::on_generatePuzzle_clicked()
     Generator g(row, col);
     g.generate();
     g.fillInNumbers();
-    g.removeValue(-1);
+//    g.removeValue(-1);
     grid = g.getGrid();
 
     printGrid();
