@@ -1,12 +1,5 @@
-#include <iostream>
-#include <QFileDialog>
-#include <QDebug>
-
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "nurikabe/nurikabe.h"
-#include "newfile.h"
-#include "generator.h"
 
 void printCell (const Cell& cell) {
     std::cout << "cell {value: " << cell.value << " x: " << cell.x << " y: " << cell.y << " }" << std::endl;
@@ -386,6 +379,9 @@ void MainWindow::printGrid() {
 
 void MainWindow::on_checkPuzzle_clicked()
 {
+    QMessageBox check;
+    check.setWindowTitle("Solve Checker");
+
     // create temporary grid for checking
     vector<vector<int> > temp_grid;
 
@@ -421,30 +417,24 @@ void MainWindow::on_checkPuzzle_clicked()
 
         BFS(temp_grid, q, visited, 0);
 
-        cout << val << ", " << visited.size() << endl;
         if (val != visited.size()) {
-            cout << "BAD white" << endl;
+            check.setText("ERROR: Rooms are the wrong size");
+            check.exec();
             return;
         }
 
         for (int i = 0; i < visited.size(); i++) {
             if (temp_grid[visited[i].r][visited[i].c] != 0) continue;
-            temp_grid[visited[i].r][visited[i].c] = 1;
+            temp_grid[visited[i].r][visited[i].c] = -2;
         }
     }
 
     // checks to make sure there are un-filled chunks
     for (int i = 0; i < row; i++) {
         for (int j = 0; j < col; j++) {
-            cout << temp_grid[i][j] << " ";
-        }
-        cout << endl;
-    }
-
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
             if (temp_grid[i][j] == 0) {
-                cout << "BAD leftover" << endl;
+                check.setText("ERROR: Rooms without a number");
+                check.exec();
                 return;
             }
         }
@@ -454,23 +444,34 @@ void MainWindow::on_checkPuzzle_clicked()
     vector<Point> visited;
     queue<Point> q;
     q.push(black_search[0]);
+    visited.push_back(q.front());
     BFS(temp_grid, q, visited, -1);
-    cout << visited.size() << endl;
-    cout << black_search.size() << endl;
     if (visited.size() != black_search.size()) {
-        cout << "Bad Black" << endl;
+        check.setText("ERROR: Walls aren't connected");
+        check.exec();
         return;
     }
 
+    // check for 2x2 blacks
     for (int i = 0; i < row-1; i++) {
         for (int j = 0; j < col-1; j++) {
             if (temp_grid[i][j] == -1 && temp_grid[i+1][j] == -1 &&
                     temp_grid[i+1][j+1] == -1 && temp_grid[i][j+1] == -1) {
-                cout << "Bad 2x2" << endl;
+                check.setText("ERROR: Can't have 2x2 walls");
+                check.exec();
                 return;
             }
         }
     }
+
+    // if solved, update table
+    // change state to VIEW
+    grid = temp_grid;
+    refreshTable();
+    changeState(2);
+
+    check.setText("Congratulations! You've solved the puzzle.");
+    check.exec();
 }
 
 void MainWindow::on_generatePuzzle_clicked()
@@ -482,7 +483,7 @@ void MainWindow::on_generatePuzzle_clicked()
     Generator g(row, col);
     g.generate();
     g.fillInNumbers();
-//    g.removeValue(-1);
+    g.removeValue(-1);
     grid = g.getGrid();
 
     refreshTable();

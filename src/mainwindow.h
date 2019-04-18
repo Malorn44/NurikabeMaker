@@ -1,11 +1,18 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <iostream>
 #include <vector>
 #include <QTableWidgetItem>
 #include <QMainWindow>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QDebug>
 
 #include "tinyxml2/tinyxml2.h"
+#include "nurikabe/nurikabe.h"
+#include "newfile.h"
+#include "generator.h"
 
 typedef unsigned int uint;
 
