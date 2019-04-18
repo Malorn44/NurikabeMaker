@@ -52,6 +52,8 @@ private slots:
 
     void on_pushButton_clicked();
 
+    void on_checkPuzzle_clicked();
+
 private:
     Ui::MainWindow *ui;
     void loadFile();

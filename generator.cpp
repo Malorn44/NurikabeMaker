@@ -137,29 +137,29 @@ void Generator::removeValue(int val) {
     }
 }
 
-vector<Point> getValidChildren(const vector<vector<int> > &grid, const Point &p) {
+vector<Point> getValidChildren(const vector<vector<int> > &grid, const Point &p, int val) {
     vector<Point> children;
     int row = grid.size();
     int col = grid[0].size();
     int i = p.r;
     int j = p.c;
     if (i+1 < row) {
-        if (grid[i+1][j] == 0) {
+        if (grid[i+1][j] == val) {
             children.push_back(Point(i+1,j));
         }
     }
     if (i-1 >= 0) {
-        if (grid[i-1][j] == 0) {
+        if (grid[i-1][j] == val) {
             children.push_back(Point(i-1,j));
         }
     }
     if (j+1 < col) {
-        if (grid[i][j+1] == 0) {
+        if (grid[i][j+1] == val) {
             children.push_back(Point(i,j+1));
         }
     }
     if (j-1 >= 0) {
-        if (grid[i][j-1] == 0) {
+        if (grid[i][j-1] == val) {
             children.push_back(Point(i,j-1));
         }
     }
@@ -171,7 +171,7 @@ void BFS(vector<vector<int> > &grid, queue<Point> &q, vector<Point> &visited, in
         Point p = q.front();
         q.pop();
 
-        vector<Point> children = getValidChildren(grid, p);
+        vector<Point> children = getValidChildren(grid, p, val);
 
         for (int i = 0; i < children.size(); i++) {
             if (std::find(visited.begin(), visited.end(), children[i]) == visited.end()) {

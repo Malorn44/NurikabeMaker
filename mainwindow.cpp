@@ -379,6 +379,95 @@ void MainWindow::printGrid() {
     }
 }
 
+void MainWindow::on_checkPuzzle_clicked()
+{
+    // create temporary grid for checking
+    vector<vector<int> > temp_grid;
+
+    // populate search spaces
+    vector<Point> white_search;
+    vector<Point> black_search;
+    for (int i = 0; i < row; i++) {
+        temp_grid.push_back(vector<int>());
+        for (int j = 0; j < col; j++) {
+            if (grid[i][j] <= -2) {
+                temp_grid[i].push_back(0);
+            } else {
+                temp_grid[i].push_back(grid[i][j]);
+            }
+            if (grid[i][j] > 0) {
+                white_search.push_back(Point(i,j));
+            }
+            if (grid[i][j] == -1) {
+                black_search.push_back(Point(i,j));
+            }
+        }
+    }
+
+    // BFS call for checking if whites are satisfied
+    while (!white_search.empty()) {
+        queue<Point> q;
+        q.push(white_search[white_search.size()-1]);
+        int val = grid[q.front().r][q.front().c];
+        white_search.pop_back();
+
+        vector<Point> visited;
+        visited.push_back(q.front());
+
+        BFS(temp_grid, q, visited, 0);
+
+        cout << val << ", " << visited.size() << endl;
+        if (val != visited.size()) {
+            cout << "BAD white" << endl;
+            return;
+        }
+
+        for (int i = 0; i < visited.size(); i++) {
+            if (temp_grid[visited[i].r][visited[i].c] != 0) continue;
+            temp_grid[visited[i].r][visited[i].c] = 1;
+        }
+    }
+
+    // checks to make sure there are un-filled chunks
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            cout << temp_grid[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            if (temp_grid[i][j] == 0) {
+                cout << "BAD leftover" << endl;
+                return;
+            }
+        }
+    }
+
+    // check if all blacks are connected
+    vector<Point> visited;
+    queue<Point> q;
+    q.push(black_search[0]);
+    BFS(temp_grid, q, visited, -1);
+    cout << visited.size() << endl;
+    cout << black_search.size() << endl;
+    if (visited.size() != black_search.size()) {
+        cout << "Bad Black" << endl;
+        return;
+    }
+
+    for (int i = 0; i < row-1; i++) {
+        for (int j = 0; j < col-1; j++) {
+            if (temp_grid[i][j] == -1 && temp_grid[i+1][j] == -1 &&
+                    temp_grid[i+1][j+1] == -1 && temp_grid[i][j+1] == -1) {
+                cout << "Bad 2x2" << endl;
+                return;
+            }
+        }
+    }
+}
+
 void MainWindow::on_generatePuzzle_clicked()
 {
     changeState(1);
@@ -388,10 +477,8 @@ void MainWindow::on_generatePuzzle_clicked()
     Generator g(row, col);
     g.generate();
     g.fillInNumbers();
-//    g.removeValue(-1);
+    g.removeValue(-1);
     grid = g.getGrid();
-
-    printGrid();
 
     refreshTable();
 }
@@ -415,3 +502,4 @@ void MainWindow::on_pushButton_clicked()
 {
     printGrid();
 }
+
