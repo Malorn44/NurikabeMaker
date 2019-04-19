@@ -343,6 +343,7 @@ void MainWindow::on_actionNew_triggered()
     NewFile newfile;
     newfile.setModal(true);
     if (newfile.exec() == QDialog::Accepted) {
+        if (newfile.getRow() == -1 || newfile.getCol() == -1) return;
         changeState(0);
         createGrid(newfile.getRow(),newfile.getCol());
         refreshTable();

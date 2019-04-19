@@ -21,10 +21,12 @@ NewFile::~NewFile()
     delete ui;
 }
 
-uint NewFile::getRow() {
+int NewFile::getRow() {
+    if (ui->lineEdit->text().isEmpty()) return -1;
     return stoul(ui->lineEdit->text().toStdString());
 }
 
-uint NewFile::getCol() {
+int NewFile::getCol() {
+    if (ui->lineEdit_2->text().isEmpty()) return -1;
     return stoul(ui->lineEdit_2->text().toStdString());
 }
