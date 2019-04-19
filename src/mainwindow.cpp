@@ -1,6 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+Cell::Cell(int x, int y, int value) {
+    this->x = x;
+    this->y = y;
+    this->value = value;
+}
+
 void printCell (const Cell& cell) {
     std::cout << "cell {value: " << cell.value << " x: " << cell.x << " y: " << cell.y << " }" << std::endl;
 }
@@ -68,6 +74,7 @@ void MainWindow::changeState(uint id) {
 }
 
 void MainWindow::onItemClicked(QTableWidgetItem *item) {
+    if (undo_moves.size() > 99) undo_moves.pop_back();
     if (state == 0) {
 //        ui->Board->setEditTriggers(QAbstractItemView::EditTriggers);
 //        item->setBackground(Qt::white);
@@ -78,13 +85,23 @@ void MainWindow::onItemClicked(QTableWidgetItem *item) {
         if (item->backgroundColor() == Qt::lightGray) {
             item->setBackground(Qt::black);
             grid[iRow][iCol] = -1;
+            undo_moves.emplace_front(iCol,iRow,0);
         } else if (item->backgroundColor() == Qt::black) {
             item->setBackground(Qt::white);
             grid[iRow][iCol] = -2;
+            undo_moves.emplace_front(iCol,iRow,-1);
         } else if (item->backgroundColor() == Qt::white) {
             item->setBackground(Qt::lightGray);
             grid[iRow][iCol] = 0;
+            undo_moves.emplace_front(iCol,iRow,-2);
         }
+    }
+    if (!undo_moves.empty()) {
+        ui->undoMove->setEnabled(true);
+    }
+    if (!redo_moves.empty()) {
+        redo_moves.clear();
+        ui->redoMove->setEnabled(false);
     }
 }
 
@@ -166,12 +183,9 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     col = std::stoul(w);
 
     while (cell != nullptr) {
-        Cell c;
-        c.value = std::stoi(cell->Attribute("value"));
-        c.x = std::stoi(cell->Attribute("x"));
-        c.y = std::stoi(cell->Attribute("y"));
-        cellVec.push_back(c);
-
+        cellVec.emplace_back(std::stoi(cell->Attribute("x")),
+                             std::stoi(cell->Attribute("y")),
+                             std::stoi(cell->Attribute("value")));
         cell = cell->NextSiblingElement("cell");
     }
 
@@ -509,3 +523,63 @@ void MainWindow::on_pushButton_clicked()
     printGrid();
 }
 
+
+void MainWindow::on_undoMove_clicked()
+{
+    Cell c = undo_moves.front();
+    undo_moves.pop_front();
+
+    if (!redo_moves.empty()) {
+        ui->redoMove->setEnabled(true);
+    }
+
+    grid[c.y][c.x] = c.value;
+
+    QTableWidgetItem* item = ui->Board->item(c.y,c.x);
+
+    redo_moves.emplace_front(c.x,c.y,modifyItem(item,c.value));
+
+    if (undo_moves.empty()) {
+        ui->undoMove->setEnabled(false);
+    }
+}
+
+void MainWindow::on_redoMove_clicked()
+{
+    Cell c = redo_moves.front();
+    redo_moves.pop_front();
+
+    grid[c.y][c.x] = c.value;
+
+    QTableWidgetItem* item = ui->Board->item(c.y,c.x);
+
+    undo_moves.emplace_front(c.x,c.y,modifyItem(item,c.value));
+
+    if (redo_moves.empty()) {
+        ui->redoMove->setEnabled(false);
+    }
+
+    if (!undo_moves.empty()) {
+        ui->undoMove->setEnabled(true);
+    }
+}
+
+int MainWindow::modifyItem(QTableWidgetItem *item, int val) {
+    int old_value = 0;
+    if (item->backgroundColor() == Qt::lightGray) {
+        old_value = 0;
+    } else if (item->backgroundColor() == Qt::black) {
+        old_value = -1;
+    } else if (item->backgroundColor() == Qt::white) {
+        old_value = -2;
+    }
+
+    if (val == 0) {
+        item->setBackground(Qt::lightGray);
+    } else if (val == -1) {
+        item->setBackground(Qt::black);
+    } else if (val == -2) {
+        item->setBackground(Qt::white);
+    }
+    return old_value;
+}

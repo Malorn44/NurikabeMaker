@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <deque>
 #include <QTableWidgetItem>
 #include <QMainWindow>
 #include <QMessageBox>
@@ -21,6 +22,7 @@ class MainWindow;
 }
 
 struct Cell {
+    Cell(int x, int y, int value);
     int value;
     int x;
     int y;
@@ -61,6 +63,10 @@ private slots:
 
     void on_checkPuzzle_clicked();
 
+    void on_undoMove_clicked();
+
+    void on_redoMove_clicked();
+
 private:
     Ui::MainWindow *ui;
     void loadFile();
@@ -70,12 +76,15 @@ private:
     void refreshTable();
     void changeState(uint id);
     void printGrid();
+    int modifyItem(QTableWidgetItem* item, int val);
     std::string gridToString();
 
     QString loaded_file;
     uint row;
     uint col;
     uint cellSize;
+    deque<Cell> undo_moves;
+    deque<Cell> redo_moves;
     std::vector<std::vector<int> > grid;
 
     // 0 is create
