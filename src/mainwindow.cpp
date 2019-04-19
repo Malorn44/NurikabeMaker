@@ -53,6 +53,8 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::changeState(uint id) {
+    ui->undoMove->setEnabled(false);
+    ui->redoMove->setEnabled(false);
     if (id == 0) {
         state = 0;
         ui->Board->setEditTriggers(QAbstractItemView::AllEditTriggers);
@@ -63,6 +65,8 @@ void MainWindow::changeState(uint id) {
         ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->statusView->setText("SOLVE");
         ui->statusView->setStyleSheet("QLabel { background-color : blue; color : white }");
+        if (!undo_moves.empty()) ui->undoMove->setEnabled(true);
+        if (!redo_moves.empty()) ui->redoMove->setEnabled(true);
     } else if (id == 2) {
         state = 2;
         ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -121,6 +125,12 @@ void MainWindow::onNumEntered(QTableWidgetItem *item) {
 }
 
 void MainWindow::refreshTable() {
+    // reset undo, redo queues
+    undo_moves.clear();
+    redo_moves.clear();
+    ui->undoMove->setEnabled(false);
+    ui->redoMove->setEnabled(false);
+
     // set table row and col count
     ui->Board->setRowCount(row);
     ui->Board->setColumnCount(col);
