@@ -2,6 +2,9 @@
 #define NEWFILE_H
 
 #include <QDialog>
+#include <iostream>
+#include <QRegExpValidator>
+#include <QRegExp>
 
 namespace Ui {
 class NewFile;

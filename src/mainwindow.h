@@ -21,6 +21,9 @@ namespace Ui {
 class MainWindow;
 }
 
+/* Stores information about a single cell
+ * Used for undo/redo function and for the auto-solver
+*/
 struct Cell {
     Cell(int x, int y, int value);
     int value;
@@ -28,6 +31,9 @@ struct Cell {
     int y;
 };
 
+/* MainWindow class for the program, handles most of the display tasks
+ * and calculations for the puzzle grid representation
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -59,8 +65,6 @@ private slots:
 
     void on_actionView_triggered();
 
-    void on_pushButton_clicked();
-
     void on_checkPuzzle_clicked();
 
     void on_undoMove_clicked();
@@ -69,28 +73,39 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    // LOAD FILES
     void loadFile();
     std::vector<Cell> ParseXML(std::string &file);
+
+    // MODIFIER
     void createGrid(std::vector<Cell> cellVec);
     void createGrid(uint row, uint col);
     void refreshTable();
     void changeState(uint id);
-    void printGrid();
     int modifyItem(QTableWidgetItem* item, int val);
+
+    // VIEW
+    void printGrid();
+
+    // ADAPTER
     std::string gridToString();
 
-    QString loaded_file;
-    uint row;
-    uint col;
-    uint cellSize;
+    // PRIVATE VARS
+    QString loaded_file; // currently loaded file
+    uint row; // rows in puzzle
+    uint col; // cols in puzzle
+    uint cellSize; // size of cells on QTableWidget
     deque<Cell> undo_moves;
     deque<Cell> redo_moves;
-    std::vector<std::vector<int> > grid;
+    std::vector<std::vector<int> > grid; // puzzle grid
 
     // 0 is create
     // 1 is solve
     // 2 is view
     uint state;
 };
+
+bool isNumber(string s);
 
 #endif // MAINWINDOW_H

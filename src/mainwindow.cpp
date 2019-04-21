@@ -1,16 +1,20 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+/* Constructs a new Cell struct
+ * @param x is the x coordinate of the cell
+ * @param y is the y coordinate of the cell
+ * @param value is the value of the cell (-2, -1, 0 or Natural Number)
+ */
 Cell::Cell(int x, int y, int value) {
     this->x = x;
     this->y = y;
     this->value = value;
 }
 
-void printCell (const Cell& cell) {
-    std::cout << "cell {value: " << cell.value << " x: " << cell.x << " y: " << cell.y << " }" << std::endl;
-}
-
+/* @param s is the string being tested
+ * @returns true if s is a number, false otherwise
+ */
 bool isNumber(string s) {
     if (s.size() == 0) return false;
     for (uint i = 0; i < s.length(); i++)
@@ -19,13 +23,15 @@ bool isNumber(string s) {
     return true;
 }
 
+// constructor for MainWindow. Sets defaults
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
     ui->console->setText("No file loaded...");
+
+    // create default 10x10 blank puzzle grid
     createGrid(10, 10);
     changeState(0);
 
@@ -42,88 +48,59 @@ MainWindow::MainWindow(QWidget *parent) :
 
     refreshTable();
 
-//    connect( ui->board, &QTableWidget::itemEntered, this, &MainWindow::onItemClicked );
+    // connecting signals to slots (for manipulating the QTableWidget)
     connect( ui->Board, &QTableWidget::itemClicked, this, &MainWindow::onItemClicked );
     connect( ui->Board, &QTableWidget::itemChanged, this, &MainWindow::onNumEntered );
 }
 
+// destructor for MainWindow
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-void MainWindow::changeState(uint id) {
-    ui->undoMove->setEnabled(false);
-    ui->redoMove->setEnabled(false);
-    if (id == 0) {
-        state = 0;
-        ui->Board->setEditTriggers(QAbstractItemView::AllEditTriggers);
-        ui->statusView->setText("CREATE");
-        ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
-    } else if (id == 1) {
-        state = 1;
-        ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        ui->statusView->setText("SOLVE");
-        ui->statusView->setStyleSheet("QLabel { background-color : blue; color : white }");
-        if (!undo_moves.empty()) ui->undoMove->setEnabled(true);
-        if (!redo_moves.empty()) ui->redoMove->setEnabled(true);
-    } else if (id == 2) {
-        state = 2;
-        ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        ui->statusView->setText("VIEW");
-        ui->statusView->setStyleSheet("QLabel { background-color : red; color : white }");
-    } else {
-        cerr << "ERROR: Invalid state" << endl;
-    }
-}
+/* Initializes a new grid based on a row and col input
+ * @param newRow is the new size of row
+ * @param newCol is the new size of col
+ * @modifies grid, loaded_file
+ * @effects initializes a grid of size newRow x newCol and resets loaded_file
+ */
+void MainWindow::createGrid(uint newRow, uint newCol) {
+    loaded_file = "";
 
-void MainWindow::onItemClicked(QTableWidgetItem *item) {
-    if (undo_moves.size() > 99) undo_moves.pop_back();
-    if (state == 0) {
-//        ui->Board->setEditTriggers(QAbstractItemView::EditTriggers);
-//        item->setBackground(Qt::white);
-    } else if (state == 1) {
-        uint iRow = item->row();
-        uint iCol = item->column();
-        if (grid[iRow][iCol] > 0) return;
-        if (item->backgroundColor() == Qt::lightGray) {
-            item->setBackground(Qt::black);
-            grid[iRow][iCol] = -1;
-            undo_moves.emplace_front(iCol,iRow,0);
-        } else if (item->backgroundColor() == Qt::black) {
-            item->setBackground(Qt::white);
-            grid[iRow][iCol] = -2;
-            undo_moves.emplace_front(iCol,iRow,-1);
-        } else if (item->backgroundColor() == Qt::white) {
-            item->setBackground(Qt::lightGray);
-            grid[iRow][iCol] = 0;
-            undo_moves.emplace_front(iCol,iRow,-2);
+    row = newRow;
+    col = newCol;
+    cellSize = 30;
+
+    // initialize grid
+    for (uint i = 0; i < row; i++) {
+        grid.push_back(std::vector<int>());
+        for (uint j = 0; j < col; j++) {
+            grid[i].push_back(0);
         }
     }
-    if (!undo_moves.empty()) {
-        ui->undoMove->setEnabled(true);
-    }
-    if (!redo_moves.empty()) {
-        redo_moves.clear();
-        ui->redoMove->setEnabled(false);
-    }
 }
 
-void MainWindow::onNumEntered(QTableWidgetItem *item) {
-    if (state != 0) return;
-    if (isNumber(item->text().toStdString())) {
-        uint textAsNum = stoul(item->text().toStdString());
-        if (textAsNum != 0) {
-            item->setBackground(Qt::white);
-            grid[item->row()][item->column()] = stoul(item->text().toStdString());
-            return;
+/* Replaces the grid with a new one w/ same rows and cols
+ * @param cellVec values that certain cells need to be
+ * @modifies grid
+ * @effects sets a row x col grid to 0 for every cell, except for those
+ * specified in cellVec
+ */
+void MainWindow::createGrid(std::vector<Cell> cellVec) {
+    grid.clear();
+    for (uint i = 0; i < row; i++) {
+        grid.push_back(std::vector<int>());
+        for (uint j = 0; j < col; j++) {
+            grid[i].push_back(0);
         }
     }
-    item->setBackground(Qt::lightGray);
-    item->setText("");
-    grid[item->row()][item->column()] = 0;
+    for (Cell c : cellVec) {
+        grid[c.y][c.x] = c.value;
+    }
 }
 
+// Refreshes the QTableWidget with new information stored in member variables
 void MainWindow::refreshTable() {
     // reset undo, redo queues
     undo_moves.clear();
@@ -159,9 +136,40 @@ void MainWindow::refreshTable() {
             }
         }
     }
-
 }
 
+/* @param id is the state to be changed to (0, 1, 2)
+ * Modifies edit triggers for QTableView based on state, also enables the undo button for
+ * state 1 (if undo_moves/redo_moves not empty) and disables it otherwise
+ */
+void MainWindow::changeState(uint id) {
+    ui->undoMove->setEnabled(false);
+    ui->redoMove->setEnabled(false);
+    if (id == 0) {
+        state = 0;
+        ui->Board->setEditTriggers(QAbstractItemView::DoubleClicked);
+        ui->statusView->setText("CREATE");
+        ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
+    } else if (id == 1) {
+        state = 1;
+        ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        ui->statusView->setText("SOLVE");
+        ui->statusView->setStyleSheet("QLabel { background-color : blue; color : white }");
+        if (!undo_moves.empty()) ui->undoMove->setEnabled(true);
+        if (!redo_moves.empty()) ui->redoMove->setEnabled(true);
+    } else if (id == 2) {
+        state = 2;
+        ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        ui->statusView->setText("VIEW");
+        ui->statusView->setStyleSheet("QLabel { background-color : red; color : white }");
+    } else {
+        cerr << "ERROR: Invalid state" << endl;
+    }
+}
+
+// parses an XML file using tinyxml2
+// @param file is the xml file to be parsed
+// @returns a Cell vector for use by createGrid
 std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     using namespace tinyxml2;
 
@@ -207,35 +215,8 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     return cellVec;
 }
 
-void MainWindow::createGrid(uint newRow, uint newCol) {
-    loaded_file = "";
-
-    row = newRow;
-    col = newCol;
-    cellSize = 30;
-
-    // initialize grid
-    for (uint i = 0; i < row; i++) {
-        grid.push_back(std::vector<int>());
-        for (uint j = 0; j < col; j++) {
-            grid[i].push_back(0);
-        }
-    }
-}
-
-void MainWindow::createGrid(std::vector<Cell> cellVec) {
-    grid.clear();
-    for (uint i = 0; i < row; i++) {
-        grid.push_back(std::vector<int>());
-        for (uint j = 0; j < col; j++) {
-            grid[i].push_back(0);
-        }
-    }
-    for (Cell c : cellVec) {
-        grid[c.y][c.x] = c.value;
-    }
-}
-
+// updates the grid using the createGrid function, modifies the current state
+// and calls ParseXML to populate a Cell vector (cellVec)
 void MainWindow::loadFile() {
     uint old_state = state;
     state = 1;
@@ -250,6 +231,7 @@ void MainWindow::loadFile() {
     changeState(1);
 }
 
+// converts a grid vector into a string for use by the auto-solver
 std::string MainWindow::gridToString() {
     std::string output = "";
     for (int i = 0; i < row; i++) {
@@ -265,6 +247,59 @@ std::string MainWindow::gridToString() {
     return output;
 }
 
+
+/*** SLOTS ***/
+
+// catches an itemClicked signal
+// changes the color of a cell if state is 1
+void MainWindow::onItemClicked(QTableWidgetItem *item) {
+    if (undo_moves.size() > 99) undo_moves.pop_back();
+    if (state == 1) {
+        uint iRow = item->row();
+        uint iCol = item->column();
+        if (grid[iRow][iCol] > 0) return;
+        if (item->backgroundColor() == Qt::lightGray) {
+            item->setBackground(Qt::black);
+            grid[iRow][iCol] = -1;
+            undo_moves.emplace_front(iCol,iRow,0);
+        } else if (item->backgroundColor() == Qt::black) {
+            item->setBackground(Qt::white);
+            grid[iRow][iCol] = -2;
+            undo_moves.emplace_front(iCol,iRow,-1);
+        } else if (item->backgroundColor() == Qt::white) {
+            item->setBackground(Qt::lightGray);
+            grid[iRow][iCol] = 0;
+            undo_moves.emplace_front(iCol,iRow,-2);
+        }
+    }
+    if (!undo_moves.empty()) {
+        ui->undoMove->setEnabled(true);
+    }
+    if (!redo_moves.empty()) {
+        redo_moves.clear();
+        ui->redoMove->setEnabled(false);
+    }
+}
+
+// catches an itemChanged signal
+// updates the text of a cell if user enters a valid number and if state is 0
+void MainWindow::onNumEntered(QTableWidgetItem *item) {
+    if (state != 0) return;
+    if (isNumber(item->text().toStdString())) {
+        uint textAsNum = stoul(item->text().toStdString());
+        if (textAsNum != 0) {
+            item->setBackground(Qt::white);
+            grid[item->row()][item->column()] = stoul(item->text().toStdString());
+            return;
+        }
+    }
+    item->setBackground(Qt::lightGray);
+    item->setText("");
+    grid[item->row()][item->column()] = 0;
+}
+
+// opens the QFileDialog to get a file name to load in
+// calls loadFile which loads in whatever loaded_file is
 void MainWindow::on_actionLoad_triggered()
 {
     loaded_file = QFileDialog::getOpenFileName(
@@ -274,9 +309,10 @@ void MainWindow::on_actionLoad_triggered()
     loadFile();
 }
 
-
+// calls the autosolver
 void MainWindow::on_solvePuzzle_clicked()
 {
+    // struct for input into the auto-solver
     struct Puzzle {
         const char * name;
         int w;
@@ -284,9 +320,11 @@ void MainWindow::on_solvePuzzle_clicked()
         const char * s;
     };
 
+    // updates the state to "view"
     changeState(2);
     ui->console->setText("Solving... this may take a moment.");
 
+    // creates Puzzle
     Puzzle puzzle;
     puzzle.h = row;
     puzzle.w = col;
@@ -296,25 +334,17 @@ void MainWindow::on_solvePuzzle_clicked()
     if (last != std::string::npos) file = file.substr(last+1);
     puzzle.name = file.c_str();
 
+    // converting to Puzzle object readable by the solver
     std::string out = gridToString();
     std::cout << out << std::endl;
     puzzle.s = out.c_str();
 
-    // converting to Puzzle object readable by the solver
-
     try {
         const auto start = steady_clock::now();
-
         Grid g(puzzle.w, puzzle.h, puzzle.s);
-
         while (g.solve() == Grid::KEEP_GOING) { }
-
         const auto finish = steady_clock::now();
 
-
-//        ofstream f(string("") + puzzle.name + string(".html"));
-
-//        g.write(f, start, finish); //writes to an HTML file
         grid = g.getFinal();
         refreshTable();
 
@@ -333,11 +363,8 @@ void MainWindow::on_solvePuzzle_clicked()
     }
 }
 
-void MainWindow::on_actionExit_triggered()
-{
-    QApplication::quit();
-}
-
+// opens newFile dialog for user to type in rows and columns of
+// new puzzle files. Handles any potentialy errors from the dialog
 void MainWindow::on_actionNew_triggered()
 {
     NewFile newfile;
@@ -350,6 +377,8 @@ void MainWindow::on_actionNew_triggered()
     }
 }
 
+// uses tinyxml2 to create a new xml file and then prompts the user to
+// save it to a location on their computer
 void MainWindow::on_actionSave_triggered()
 {
     using namespace tinyxml2;
@@ -393,15 +422,8 @@ void MainWindow::on_actionSave_triggered()
     doc.SaveFile(saveFile.toStdString().c_str());
 }
 
-void MainWindow::printGrid() {
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            cout << grid[i][j] << " ";
-        }
-        cout << endl;
-    }
-}
-
+// checks if a puzzle is solved or not. There are 4 checks
+// that it needs to pass in order to be declared as solved.
 void MainWindow::on_checkPuzzle_clicked()
 {
     QMessageBox check;
@@ -499,42 +521,42 @@ void MainWindow::on_checkPuzzle_clicked()
     check.exec();
 }
 
+// generates a puzzle using Generator
 void MainWindow::on_generatePuzzle_clicked()
 {
     changeState(1);
 
+    // generates a random number seed for use by Generator
     srand(time(NULL));
 
     Generator g(row, col);
-    g.generate();
-    g.fillInNumbers();
-    g.removeValue(-1);
+    g.generate();       // generates the puzzle
+    g.fillInNumbers();  // fills in sizes of rooms
+    g.removeValue(-1);  // removes walls (solution)
     grid = g.getGrid();
 
     refreshTable();
 }
 
+// changes state to 0
 void MainWindow::on_actionCreate_triggered()
 {
     changeState(0);
 }
 
+// changes state to 1
 void MainWindow::on_actionSolve_triggered()
 {
     changeState(1);
 }
 
+// changes state to 2
 void MainWindow::on_actionView_triggered()
 {
     changeState(2);
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-    printGrid();
-}
-
-
+// undoes the last move
 void MainWindow::on_undoMove_clicked()
 {
     Cell c = undo_moves.front();
@@ -555,6 +577,7 @@ void MainWindow::on_undoMove_clicked()
     }
 }
 
+// redoes the last move undone
 void MainWindow::on_redoMove_clicked()
 {
     Cell c = redo_moves.front();
@@ -575,6 +598,7 @@ void MainWindow::on_redoMove_clicked()
     }
 }
 
+// helper function for the above 2, removes repeat code
 int MainWindow::modifyItem(QTableWidgetItem *item, int val) {
     int old_value = 0;
     if (item->backgroundColor() == Qt::lightGray) {
@@ -593,4 +617,20 @@ int MainWindow::modifyItem(QTableWidgetItem *item, int val) {
         item->setBackground(Qt::white);
     }
     return old_value;
+}
+
+// prints the grid for debugging purposes into console
+void MainWindow::printGrid() {
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < col; j++) {
+            cout << grid[i][j] << " ";
+        }
+        cout << endl;
+    }
+}
+
+// quits the application
+void MainWindow::on_actionExit_triggered()
+{
+    QApplication::quit();
 }

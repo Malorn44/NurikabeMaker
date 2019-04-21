@@ -9,6 +9,8 @@
 
 using namespace std;
 
+// TODO: just do everything with Cell struct
+// stores the row, col value of a point
 struct Point {
     Point();
     Point(int row, int col);
@@ -16,6 +18,7 @@ struct Point {
     int c;
 };
 
+// generates Nurikabe puzzles using a maze algorithm
 class Generator
 {
 public:
@@ -28,16 +31,14 @@ public:
 private:
     int row;
     int col;
-
     vector<vector<int> > m_grid;
     vector<Point> stack;
-    Point current();
 
     bool partOfSquare(int i, int j);
     Point getRandomChild(int i, int j);
-//    vector<Point> getValidChildren(const Point &p) const;
 };
 
+// non-member functions (called by other classes)
 vector<Point> getValidChildren(const vector<vector<int> > &grid, const Point &p);
 void BFS(vector<vector<int> > &grid, queue<Point> &q, vector<Point> &visited, int val);
 

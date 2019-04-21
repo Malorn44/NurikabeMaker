@@ -4,5 +4,6 @@
         <file>assets/exit_app.svg</file>
         <file>assets/new_file.svg</file>
         <file>assets/save_file.svg</file>
+        <file>assets/icon.ico</file>
     </qresource>
 </RCC>
