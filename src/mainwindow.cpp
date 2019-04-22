@@ -12,6 +12,17 @@ Cell::Cell(int x, int y, int value) {
     this->value = value;
 }
 
+/* Constructs a new State struct
+ * @param undo is an undo queue
+ * @param redo is a redo queue
+ * @param grid is a puzzle grid
+ */
+State::State(deque<Cell> undo, deque<Cell> redo, vector<vector<int> > grid) {
+    this->undo = undo;
+    this->redo = redo;
+    this->grid = grid;
+}
+
 /* @param s is the string being tested
  * @returns true if s is a number, false otherwise
  */
@@ -31,9 +42,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->console->setText("No file loaded...");
 
+    for (int i = 0; i < 3; i++) {
+        states[i] = State();
+    }
+
     // create default 10x10 blank puzzle grid
     createGrid(10, 10);
-    changeState(0);
+    changeMode(0);
 
     // remove table headers
     ui->Board->horizontalHeader()->setVisible(false);
@@ -138,32 +153,32 @@ void MainWindow::refreshTable() {
     }
 }
 
-/* @param id is the state to be changed to (0, 1, 2)
- * Modifies edit triggers for QTableView based on state, also enables the undo button for
- * state 1 (if undo_moves/redo_moves not empty) and disables it otherwise
+/* @param id is the mode to be changed to (0, 1, 2)
+ * Modifies edit triggers for QTableView based on mode, also enables the undo button for
+ * mode 1 (if undo_moves/redo_moves not empty) and disables it otherwise
  */
-void MainWindow::changeState(uint id) {
+void MainWindow::changeMode(uint id) {
     ui->undoMove->setEnabled(false);
     ui->redoMove->setEnabled(false);
     if (id == 0) {
-        state = 0;
+        mode = 0;
         ui->Board->setEditTriggers(QAbstractItemView::DoubleClicked);
         ui->statusView->setText("CREATE");
         ui->statusView->setStyleSheet("QLabel { background-color : green; color : white }");
     } else if (id == 1) {
-        state = 1;
+        mode = 1;
         ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->statusView->setText("SOLVE");
         ui->statusView->setStyleSheet("QLabel { background-color : blue; color : white }");
         if (!undo_moves.empty()) ui->undoMove->setEnabled(true);
         if (!redo_moves.empty()) ui->redoMove->setEnabled(true);
     } else if (id == 2) {
-        state = 2;
+        mode = 2;
         ui->Board->setEditTriggers(QAbstractItemView::NoEditTriggers);
         ui->statusView->setText("VIEW");
         ui->statusView->setStyleSheet("QLabel { background-color : red; color : white }");
     } else {
-        cerr << "ERROR: Invalid state" << endl;
+        cerr << "ERROR: Invalid mode" << endl;
     }
 }
 
@@ -215,20 +230,20 @@ std::vector<Cell> MainWindow::ParseXML(std::string &file) {
     return cellVec;
 }
 
-// updates the grid using the createGrid function, modifies the current state
+// updates the grid using the createGrid function, modifies the current mode
 // and calls ParseXML to populate a Cell vector (cellVec)
 void MainWindow::loadFile() {
-    uint old_state = state;
-    state = 1;
+    uint old_mode = mode;
+    mode = 1;
     std::string file = loaded_file.toStdString();
     std::vector<Cell> cellVec = ParseXML(file);
     if (cellVec.empty()) { // handles the case of no file found
-        state = old_state;
+        mode = old_mode;
         return;
     }
     createGrid(cellVec);
     refreshTable();
-    changeState(1);
+    changeMode(1);
 }
 
 // converts a grid vector into a string for use by the auto-solver
@@ -247,14 +262,71 @@ std::string MainWindow::gridToString() {
     return output;
 }
 
+// Handles loading of a state
+void MainWindow::saveState(uint id) {
+    if (mode != 1) {
+        QMessageBox::warning(
+                    this,
+                    tr("Save State"),
+                    tr("Must be in \"Solve\" mode to save state"));
+        return;
+    }
+    if (!states[id].grid.empty()) {\
+        QMessageBox::StandardButton reply = QMessageBox::question(
+                    this,
+                    tr("Save State"),
+                    tr(("Saved state already exists with grid of size " +
+                        to_string(states[id].grid.size()) + "x" +
+                        to_string(states[id].grid[0].size()) +
+                        "\nOverwrite state?").c_str()),
+                        QMessageBox::Yes|QMessageBox::No);
+        if(reply == QMessageBox::No) {
+            return;
+        }
+    }
+    states[id] = State(undo_moves,
+                       redo_moves,
+                       grid);
+
+    if (id == 0) {
+        ui->loadState_1->setIcon(QIcon(":/icon/assets/valid.svg"));
+        ui->loadState_1->setEnabled(true);
+    } else if (id == 1) {
+        ui->loadState_2->setIcon(QIcon(":/icon/assets/valid.svg"));
+        ui->loadState_2->setEnabled(true);
+    } else if (id == 2) {
+        ui->loadState_2->setIcon(QIcon(":/icon/assets/valid.svg"));
+        ui->loadState_2->setEnabled(true);
+    }
+}
+
+// Handles saving of a state
+void MainWindow::loadState(uint id) {
+    if (mode != 1) {
+        QMessageBox::warning(
+                    this,
+                    tr("Load State"),
+                    tr("Must be in \"Solve\" mode to load state"));
+        return;
+    }
+
+    grid = states[id].grid;
+    refreshTable();
+
+    // need to do this after since refreshTable clears undo/redo
+    undo_moves = states[id].undo;
+    redo_moves = states[id].redo;
+
+    changeMode(1);
+}
 
 /*** SLOTS ***/
 
 // catches an itemClicked signal
-// changes the color of a cell if state is 1
+// changes the color of a cell if mode is 1
 void MainWindow::onItemClicked(QTableWidgetItem *item) {
     if (undo_moves.size() > 99) undo_moves.pop_back();
-    if (state == 1) {
+    if (mode == 1) {
         uint iRow = item->row();
         uint iCol = item->column();
         if (grid[iRow][iCol] > 0) return;
@@ -282,9 +354,9 @@ void MainWindow::onItemClicked(QTableWidgetItem *item) {
 }
 
 // catches an itemChanged signal
-// updates the text of a cell if user enters a valid number and if state is 0
+// updates the text of a cell if user enters a valid number and if mode is 0
 void MainWindow::onNumEntered(QTableWidgetItem *item) {
-    if (state != 0) return;
+    if (mode != 0) return;
     if (isNumber(item->text().toStdString())) {
         uint textAsNum = stoul(item->text().toStdString());
         if (textAsNum != 0) {
@@ -320,8 +392,8 @@ void MainWindow::on_solvePuzzle_clicked()
         const char * s;
     };
 
-    // updates the state to "view"
-    changeState(2);
+    // updates the mode to "view"
+    changeMode(2);
     ui->console->setText("Solving... this may take a moment.");
 
     // creates Puzzle
@@ -371,7 +443,7 @@ void MainWindow::on_actionNew_triggered()
     newfile.setModal(true);
     if (newfile.exec() == QDialog::Accepted) {
         if (newfile.getRow() == -1 || newfile.getCol() == -1) return;
-        changeState(0);
+        changeMode(0);
         createGrid(newfile.getRow(),newfile.getCol());
         refreshTable();
     }
@@ -512,10 +584,10 @@ void MainWindow::on_checkPuzzle_clicked()
     }
 
     // if solved, update table
-    // change state to VIEW
+    // change mode to VIEW
     grid = temp_grid;
     refreshTable();
-    changeState(2);
+    changeMode(2);
 
     check.setText("Congratulations! You've solved the puzzle.");
     check.exec();
@@ -524,7 +596,7 @@ void MainWindow::on_checkPuzzle_clicked()
 // generates a puzzle using Generator
 void MainWindow::on_generatePuzzle_clicked()
 {
-    changeState(1);
+    changeMode(1);
 
     // generates a random number seed for use by Generator
     srand(time(NULL));
@@ -538,23 +610,54 @@ void MainWindow::on_generatePuzzle_clicked()
     refreshTable();
 }
 
-// changes state to 0
+// MODE CHANGE //
 void MainWindow::on_actionCreate_triggered()
 {
-    changeState(0);
+    changeMode(0);
 }
-
-// changes state to 1
 void MainWindow::on_actionSolve_triggered()
 {
-    changeState(1);
+    changeMode(1);
 }
-
-// changes state to 2
 void MainWindow::on_actionView_triggered()
 {
-    changeState(2);
+    changeMode(2);
 }
+// MODE CHANGE //
+
+// SAVE STATE //
+void MainWindow::on_saveState_1_triggered()
+{
+    saveState(0);
+}
+
+void MainWindow::on_saveState_2_triggered()
+{
+    saveState(1);
+}
+
+void MainWindow::on_saveState_3_triggered()
+{
+    saveState(2);
+}
+// SAVE STATE //
+
+// LOAD STATE //
+void MainWindow::on_loadState_1_triggered()
+{
+    loadState(0);
+}
+
+void MainWindow::on_loadState_2_triggered()
+{
+    loadState(1);
+}
+
+void MainWindow::on_loadState_3_triggered()
+{
+    loadState(2);
+}
+// LOAD STATE//
 
 // undoes the last move
 void MainWindow::on_undoMove_clicked()
@@ -562,16 +665,15 @@ void MainWindow::on_undoMove_clicked()
     Cell c = undo_moves.front();
     undo_moves.pop_front();
 
-    if (!redo_moves.empty()) {
-        ui->redoMove->setEnabled(true);
-    }
-
     grid[c.y][c.x] = c.value;
 
     QTableWidgetItem* item = ui->Board->item(c.y,c.x);
 
     redo_moves.emplace_front(c.x,c.y,modifyItem(item,c.value));
 
+    if (!redo_moves.empty()) {
+        ui->redoMove->setEnabled(true);
+    }
     if (undo_moves.empty()) {
         ui->undoMove->setEnabled(false);
     }

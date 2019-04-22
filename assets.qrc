@@ -5,5 +5,7 @@
         <file>assets/new_file.svg</file>
         <file>assets/save_file.svg</file>
         <file>assets/icon.ico</file>
+        <file>assets/invalid.svg</file>
+        <file>assets/valid.svg</file>
     </qresource>
 </RCC>

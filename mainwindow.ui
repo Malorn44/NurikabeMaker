@@ -181,20 +181,38 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>Change Mode</string>
     </property>
-    <widget class="QMenu" name="menuChange_Mode">
+    <addaction name="actionCreate"/>
+    <addaction name="actionSolve"/>
+    <addaction name="actionView"/>
+   </widget>
+   <widget class="QMenu" name="menuStates">
+    <property name="title">
+     <string>States</string>
+    </property>
+    <widget class="QMenu" name="menuLoad">
      <property name="title">
-      <string>Change Mode</string>
+      <string>Load</string>
      </property>
-     <addaction name="actionCreate"/>
-     <addaction name="actionSolve"/>
-     <addaction name="actionView"/>
+     <addaction name="loadState_1"/>
+     <addaction name="loadState_2"/>
+     <addaction name="loadState_3"/>
     </widget>
-    <addaction name="menuChange_Mode"/>
+    <widget class="QMenu" name="menuSave">
+     <property name="title">
+      <string>Save</string>
+     </property>
+     <addaction name="saveState_1"/>
+     <addaction name="saveState_2"/>
+     <addaction name="saveState_3"/>
+    </widget>
+    <addaction name="menuSave"/>
+    <addaction name="menuLoad"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
+   <addaction name="menuStates"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -254,6 +272,69 @@
   <action name="actionView">
    <property name="text">
     <string>View</string>
+   </property>
+  </action>
+  <action name="saveState_1">
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/save_file.svg</normaloff>:/icon/assets/save_file.svg</iconset>
+   </property>
+   <property name="text">
+    <string>State 1</string>
+   </property>
+  </action>
+  <action name="saveState_2">
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/save_file.svg</normaloff>:/icon/assets/save_file.svg</iconset>
+   </property>
+   <property name="text">
+    <string>State 2</string>
+   </property>
+  </action>
+  <action name="saveState_3">
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/save_file.svg</normaloff>:/icon/assets/save_file.svg</iconset>
+   </property>
+   <property name="text">
+    <string>State 3</string>
+   </property>
+  </action>
+  <action name="loadState_1">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/invalid.svg</normaloff>:/icon/assets/invalid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>State 1</string>
+   </property>
+  </action>
+  <action name="loadState_2">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/invalid.svg</normaloff>:/icon/assets/invalid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>State 2</string>
+   </property>
+  </action>
+  <action name="loadState_3">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="assets.qrc">
+     <normaloff>:/icon/assets/invalid.svg</normaloff>:/icon/assets/invalid.svg</iconset>
+   </property>
+   <property name="text">
+    <string>State 3</string>
    </property>
   </action>
  </widget>

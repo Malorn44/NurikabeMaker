@@ -23,12 +23,21 @@ class MainWindow;
 
 /* Stores information about a single cell
  * Used for undo/redo function and for the auto-solver
-*/
+ */
 struct Cell {
     Cell(int x, int y, int value);
     int value;
     int x;
     int y;
+};
+
+// State storage
+struct State {
+    State() : undo(deque<Cell>()), redo(deque<Cell>()), grid(vector<vector<int>>()) {}
+    State(deque<Cell> undo, deque<Cell> redo, vector<vector<int> > grid);
+    deque<Cell> undo;
+    deque<Cell> redo;
+    vector<vector<int> > grid;
 };
 
 /* MainWindow class for the program, handles most of the display tasks
@@ -71,6 +80,18 @@ private slots:
 
     void on_redoMove_clicked();
 
+    void on_saveState_1_triggered();
+
+    void on_saveState_2_triggered();
+
+    void on_saveState_3_triggered();
+
+    void on_loadState_1_triggered();
+
+    void on_loadState_2_triggered();
+
+    void on_loadState_3_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -82,7 +103,9 @@ private:
     void createGrid(std::vector<Cell> cellVec);
     void createGrid(uint row, uint col);
     void refreshTable();
-    void changeState(uint id);
+    void changeMode(uint id);
+    void saveState(uint id);
+    void loadState(uint id);
     int modifyItem(QTableWidgetItem* item, int val);
 
     // VIEW
@@ -91,19 +114,20 @@ private:
     // ADAPTER
     std::string gridToString();
 
-    // PRIVATE VARS
+    // MEMBER VARS
     QString loaded_file; // currently loaded file
     uint row; // rows in puzzle
     uint col; // cols in puzzle
     uint cellSize; // size of cells on QTableWidget
     deque<Cell> undo_moves;
     deque<Cell> redo_moves;
+    State states[3]; // stores 3 states
     std::vector<std::vector<int> > grid; // puzzle grid
 
     // 0 is create
     // 1 is solve
     // 2 is view
-    uint state;
+    uint mode;
 };
 
 bool isNumber(string s);
