@@ -375,9 +375,9 @@ void MainWindow::onNumEntered(QTableWidgetItem *item) {
 void MainWindow::on_actionLoad_triggered()
 {
     loaded_file = QFileDialog::getOpenFileName(
-                this, tr("Open File"),
-                "C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles",
+                this, tr("Open File"),"",
                 "All files (*.*);;XML File (*.xml)");
+
     loadFile();
 }
 
@@ -487,10 +487,9 @@ void MainWindow::on_actionSave_triggered()
     doc.InsertFirstChild(declaration);
 
     QString saveFile = QFileDialog::getSaveFileName(
-                this, tr("Open File"),
-                "C:/Users/Max/Dropbox/Personal/Programming Projects/nurikabe_solver/puzzles",
+                this, tr("Open File"), "",
                 "All files (*.*);;XML File (*.xml)");
-    cout << saveFile.toStdString() << endl;
+
     doc.SaveFile(saveFile.toStdString().c_str());
 }
 
