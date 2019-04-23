@@ -4,6 +4,21 @@
 # NurikabeMaker
 A GUI for auto-solving and auto-generating Nurikabe puzzles, along with solving them yourself.
 
+![Application View](https://i.imgur.com/nHp0zIl.png)
+
+### Generate Puzzles
+This program can generate Nurikabe puzzles of any given size. The puzzles are guaranteed solvable but not guaranteed to have a single solution (yet).
+
+Seen below is a 20x20 Nurikabe puzzle.
+
+![Puzzle Example](https://i.imgur.com/mOVCOug.png)
+
+### Manually Solve Puzzles
+You can manually solve Nurikabe puzzles using this program with built-in undo/redo buttons, save states, and a solution checker that tells you what is incorrect about your solution (rooms of incorrect size, rooms without a number, unconnected walls, and 2x2 area of walls).
+
+### Auto Solve Puzzles
+The program can also *attempt* to manually solve puzzles.
+
 ## Running the Program
 To run the program, simply double click the NurikabeMaker.exe file located in /build-NurikabeMaker-Desktop_Qt_5_12_1_MinGW_64_bit-Release/release/NurikabeMaker.exe
 
