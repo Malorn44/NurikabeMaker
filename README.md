@@ -16,8 +16,10 @@ Seen below is a 20x20 Nurikabe puzzle.
 ### Manually Solve Puzzles
 You can manually solve Nurikabe puzzles using this program with built-in undo/redo buttons, save states, and a solution checker that tells you what is incorrect about your solution (rooms of incorrect size, rooms without a number, unconnected walls, and 2x2 area of walls).
 
+![Puzzle Solve](https://i.imgur.com/3injugL.png)
+
 ### Auto Solve Puzzles
-The program can also *attempt* to manually solve puzzles.
+The program can also *attempt* to manually solve puzzles. The auto-solver is open source and available on Microsoft's GitHub (link in acknowledgements).
 
 ## Running the Program
 To run the program, simply double click the NurikabeMaker.exe file located in /build-NurikabeMaker-Desktop_Qt_5_12_1_MinGW_64_bit-Release/release/NurikabeMaker.exe
